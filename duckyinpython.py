@@ -131,16 +131,19 @@ time.sleep(.5)
 led_pwm_up(led)
 
 #init button
-button1_pin = DigitalInOut(GP22) # defaults to input
+button1_pin = DigitalInOut(GP23) # WeAct RP2040 button
 button1_pin.pull = Pull.UP      # turn on internal pull-up resistor
 button1 =  Debouncer(button1_pin)
 
 def getProgrammingStatus():
+    '''
     # check GP0 for setup mode
     # see setup mode for instructions
     progStatusPin = digitalio.DigitalInOut(GP0)
     progStatusPin.switch_to_input(pull=digitalio.Pull.UP)
     progStatus = not progStatusPin.value
+    '''
+    progStatus = not button1_pin.value # using WeAct RP2040 button to set programming mode also
     return(progStatus)
 
 
