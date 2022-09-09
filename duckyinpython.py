@@ -24,17 +24,21 @@ import pwmio
 
 led = pwmio.PWMOut(LED, frequency=5000, duty_cycle=0)
 
-def led_pwm_up(led):
+def led_pwm_up(led, callback=None):
     for i in range(100):
         # PWM LED up and down
         if i < 50:
             led.duty_cycle = int(i * 2 * 65535 / 100)  # Up
+        if callback is not None:
+            callback()
         time.sleep(0.01)
-def led_pwm_down(led):
+def led_pwm_down(led, callback=None):
     for i in range(100):
         # PWM LED up and down
         if i >= 50:
             led.duty_cycle = 65535 - int((i - 50) * 2 * 65535 / 100)  # Down
+        if callback is not None:
+            callback()
         time.sleep(0.01)
 
 duckyCommands = {
@@ -127,9 +131,9 @@ time.sleep(.5)
 led_pwm_up(led)
 
 #init button
-button1_pin = DigitalInOut(GP23) # WeAct RP2040 button
-button1_pin.pull = Pull.UP      # turn on internal pull-up resistor
-button1 =  Debouncer(button1_pin)
+runScriptButton_pin = DigitalInOut(GP23) # WeAct RP2040 button
+runScriptButton_pin.pull = Pull.UP      # turn on internal pull-up resistor
+runScriptButton =  Debouncer(runScriptButton_pin)
 
 def getProgrammingStatus():
     '''
@@ -139,7 +143,7 @@ def getProgrammingStatus():
     progStatusPin.switch_to_input(pull=Pull.UP)
     progStatus = not progStatusPin.value
     '''
-    progStatus = not button1_pin.value # using WeAct RP2040 button to set programming mode also
+    progStatus = not runScriptButton_pin.value # using WeAct RP2040 button to set programming mode also
     return(progStatus)
 
 
@@ -204,15 +208,23 @@ def selectPayload():
         # default to payload1
         payload = "payload.dd"
 
-
     return payload
+
+def checkRunScriptButton() :
+    global runScriptButton, payload
+    runScriptButton.update()
+    if(runScriptButton.fell):
+        runScript(payload)
+        runScriptButtonPushed = False
+
+    
 
 progStatus = False
 progStatus = getProgrammingStatus()
+payload = selectPayload()
 
 if(progStatus == False):
     # not in setup mode, inject the payload
-    payload = selectPayload()
     print("Running ", payload)
     runScript(payload)
 
@@ -220,17 +232,6 @@ if(progStatus == False):
 else:
     print("Update your payload")
 
-led_state = False
 while True:
-    button1.update()
-    button1Pushed = button1.fell
-    if(button1Pushed):
-        runScript(payload)
-        button1Pushed = False
-
-    if led_state:
-        led_pwm_up(led)
-        led_state = False
-    else:
-        led_pwm_down(led)
-        led_state = True
+    led_pwm_up(led, checkRunScriptButton)
+    led_pwm_down(led, checkRunScriptButton)
