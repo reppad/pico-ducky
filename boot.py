@@ -1,10 +1,10 @@
 from microcontroller import pin
-import digitalio
+from digitalio import DigitalInOut
 import storage
 
 noStorageStatus = False
-noStoragePin = digitalio.DigitalInOut(pin.GPIO23) # WeAct RP2040 button
-noStoragePin.switch_to_input(pull=digitalio.Pull.UP)
+noStoragePin = DigitalInOut(pin.GPIO23) # WeAct RP2040 button
+noStoragePin.switch_to_input()
 noStorageStatus = not noStoragePin.value
 
 if(noStorageStatus == True):

@@ -132,8 +132,8 @@ led_pwm_up(led)
 
 #init button
 runScriptButton_pin = DigitalInOut(pin.GPIO23) # WeAct RP2040 button
-runScriptButton_pin.pull = Pull.UP      # turn on internal pull-up resistor
-runScriptButton =  Debouncer(runScriptButton_pin)
+runScriptButton_pin.switch_to_input()
+runScriptButton = Debouncer(runScriptButton_pin)
 
 def getProgrammingStatus():
     '''
@@ -143,7 +143,7 @@ def getProgrammingStatus():
     progStatusPin.switch_to_input(pull=Pull.UP)
     progStatus = not progStatusPin.value
     '''
-    progStatus = not runScriptButton_pin.value # using WeAct RP2040 button to set programming mode also
+    progStatus = runScriptButton_pin.value # using WeAct RP2040 button to set programming mode also
     return(progStatus)
 
 
@@ -213,7 +213,7 @@ def selectPayload():
 def checkRunScriptButton() :
     global runScriptButton, payload
     runScriptButton.update()
-    if(runScriptButton.fell):
+    if(runScriptButton.rose):
         runScript(payload)
         runScriptButtonPushed = False
 
