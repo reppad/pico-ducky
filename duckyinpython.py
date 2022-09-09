@@ -19,10 +19,10 @@ import supervisor
 import time
 from digitalio import DigitalInOut, Pull
 from adafruit_debouncer import Debouncer
-from board import *
+from microcontroller import pin
 import pwmio
 
-led = pwmio.PWMOut(LED, frequency=5000, duty_cycle=0)
+led = pwmio.PWMOut(pin.GPIO25, frequency=5000, duty_cycle=0)
 
 def led_pwm_up(led, callback=None):
     for i in range(100):
@@ -131,15 +131,15 @@ time.sleep(.5)
 led_pwm_up(led)
 
 #init button
-runScriptButton_pin = DigitalInOut(GP23) # WeAct RP2040 button
+runScriptButton_pin = DigitalInOut(pin.GPIO23) # WeAct RP2040 button
 runScriptButton_pin.pull = Pull.UP      # turn on internal pull-up resistor
 runScriptButton =  Debouncer(runScriptButton_pin)
 
 def getProgrammingStatus():
     '''
-    # check GP0 for setup mode
+    # check pin.GPIO0 for setup mode
     # see setup mode for instructions
-    progStatusPin = DigitalInOut(GP0)
+    progStatusPin = DigitalInOut(pin.GPIO0)
     progStatusPin.switch_to_input(pull=Pull.UP)
     progStatus = not progStatusPin.value
     '''
@@ -173,20 +173,20 @@ def runScript(file):
 def selectPayload():
     payload = "payload.dd"
     # check switch status
-    # payload1 = GPIO4 to GND
-    # payload2 = GPIO5 to GND
-    # payload3 = GPIO10 to GND
-    # payload4 = GPIO11 to GND
-    payload1Pin = DigitalInOut(GP4)
+    # payload1 = pin.GPIOIO4 to GND
+    # payload2 = pin.GPIOIO5 to GND
+    # payload3 = pin.GPIOIO10 to GND
+    # payload4 = pin.GPIOIO11 to GND
+    payload1Pin = DigitalInOut(pin.GPIO4)
     payload1Pin.switch_to_input(pull=Pull.UP)
     payload1State = not payload1Pin.value
-    payload2Pin = DigitalInOut(GP5)
+    payload2Pin = DigitalInOut(pin.GPIO5)
     payload2Pin.switch_to_input(pull=Pull.UP)
     payload2State = not payload2Pin.value
-    payload3Pin = DigitalInOut(GP10)
+    payload3Pin = DigitalInOut(pin.GPIO10)
     payload3Pin.switch_to_input(pull=Pull.UP)
     payload3State = not payload3Pin.value
-    payload4Pin = DigitalInOut(GP11)
+    payload4Pin = DigitalInOut(pin.GPIO11)
     payload4Pin.switch_to_input(pull=Pull.UP)
     payload4State = not payload4Pin.value
 
@@ -217,7 +217,6 @@ def checkRunScriptButton() :
         runScript(payload)
         runScriptButtonPushed = False
 
-    
 
 progStatus = False
 progStatus = getProgrammingStatus()
