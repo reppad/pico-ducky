@@ -149,7 +149,8 @@ def checkRunScriptButton() :
         runScriptButtonPushed = False
         rainbow(pixel_pin)
 
-payload = 'payload.dd'
+payload = 'payloads/hello_world.dd'
+#runScript(payload)     # autorun
 
 while True:
     checkRunScriptButton()
