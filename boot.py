@@ -1,41 +1,51 @@
-# License : GPLv2.0
-# copyright (c) 2023  Dave Bailey
-# Author: Dave Bailey (dbisu, @daveisu)
-# Pico and Pico W board support
+#   Copyright 2024 PicoUSB
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
-from board import *
+"""Pico USB boot.py file. If button is not pressed, execute code.py, not showing as mass storage; if pressed reset into SAFE MODE where code.py is not executed"""
+import time
 import board
-import digitalio
 import storage
+import digitalio
+import microcontroller
 
-noStorage = False
-noStoragePin = digitalio.DigitalInOut(GP15)
-noStoragePin.switch_to_input(pull=digitalio.Pull.UP)
-noStorageStatus = noStoragePin.value
+mode = digitalio.DigitalInOut(board.GP25)
+mode.direction = digitalio.Direction.INPUT
+mode.pull = digitalio.Pull.UP
 
-# If GP15 is not connected, it will default to being pulled high (True)
-# If GP is connected to GND, it will be low (False)
+"""
+storage.remount("/", readonly=False)
+m = storage.getmount("/")
+m.label = "PicoUSB"
+storage.remount("/", readonly=True)
+storage.enable_usb_drive()
+"""
 
-# Pico:
-#   GP15 not connected == USB visible
-#   GP15 connected to GND == USB not visible
+time.sleep(0.1) #wait a bit so the button gets pulled up
 
-# Pico W:
-#   GP15 not connected == USB NOT visible
-#   GP15 connected to GND == USB visible
-
-if(board.board_id == 'raspberry_pi_pico'):
-    # On Pi Pico, default to USB visible
-    noStorage = not noStorageStatus
-elif(board.board_id == 'raspberry_pi_pico_w'):
-    # on Pi Pico W, default to USB hidden by default
-    # so webapp can access storage
-    noStorage = noStorageStatus
-
-if(noStorage == True):
-    # don't show USB drive to host PC
+if mode.value:
     storage.disable_usb_drive()
-    print("Disabling USB drive")
 else:
-    # normal boot
-    print("USB drive enabled")
+    time.sleep(0.1) #check again after 100ms to see if the button is still pressed
+    if mode.value:
+        storage.disable_usb_drive()
+    else:
+        #storage.enable_usb_drive()
+        microcontroller.on_next_reset(microcontroller.RunMode.SAFE_MODE)
+        microcontroller.reset()
+    
+
+# in case you screw up and disable usb drive without the ability to enable it, to enter safe mode write in shell:
+# import microcontroller
+# microcontroller.on_next_reset(microcontroller.RunMode.SAFE_MODE)
+# microcontroller.reset()

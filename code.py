@@ -42,7 +42,7 @@ def startWiFi():
 supervisor.runtime.autoreload = False
 
 if(board.board_id == 'raspberry_pi_pico'):
-    led = pwmio.PWMOut(board.LED, frequency=5000, duty_cycle=0)
+    led = pwmio.PWMOut(board.GP12, frequency=5000, duty_cycle=0)
 elif(board.board_id == 'raspberry_pi_pico_w'):
     led = digitalio.DigitalInOut(board.LED)
     led.switch_to_output()
